@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expense Tracker</title>
+<style>
+:root{--bg:#f1f4f7;--panel:#fff;--ink:#16233b;--muted:#5b6880;--line:#d8dfe8;--accent:#2c4fd8;--on:#fff;--inc:#14804a;--exp:#c23b3b}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--on:#0f1624;--inc:#5fd39a;--exp:#ff8d8d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--accent)}h1{margin:8px 0 20px;font-size:28px}h2{font-size:18px;margin:0 0 12px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.sum b{display:block;font-size:22px}.sum span{color:var(--muted);font-size:14px}
+.inc{color:var(--inc)}.exp{color:var(--exp)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;margin-bottom:16px}
+label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+input,select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{cursor:pointer}button.p{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}
+.bar{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cols{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+ul{list-style:none;margin:0;padding:0}
+li.t{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+li.t .m{flex:1;min-width:0}li.t small{color:var(--muted);display:block;overflow-wrap:anywhere}
+li.t .del{padding:2px 8px;font-size:13px}
+.row{margin-bottom:10px;font-size:14px}.row div{height:8px;border-radius:4px;background:var(--accent);margin-top:4px}
+.empty{color:var(--muted);margin:8px 0}
+@media(max-width:700px){.cols{grid-template-columns:1fr}.sum b{font-size:18px}}
+.login{display:grid;gap:10px;max-width:360px}
+.userbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;color:var(--muted);font-size:14px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;max-width:90vw;z-index:9}
+#toast:empty{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html">← Back to portfolio</a>
+  <h1>Expense Tracker</h1>
+  <div id="gate"></div>
+  <div id="app" hidden>
+  <div class="sum">
+    <div class="box"><span>Income</span><b class="inc" id="inc">฿0.00</b></div>
+    <div class="box"><span>Spent</span><b class="exp" id="exp">฿0.00</b></div>
+    <div class="box"><span>Balance</span><b id="bal">฿0.00</b></div>
+  </div>
+
+  <form class="box" id="form">
+    <label>Type<select id="type"><option value="expense">Expense</option><option value="income">Income</option></select></label>
+    <label>Amount (฿)<input id="amount" type="number" min="0.01" step="0.01" required></label>
+    <label>Category<select id="cat"></select></label>
+    <label>Date<input id="date" type="date" required></label>
+    <label>Note<input id="note" maxlength="60" placeholder="Optional"></label>
+    <button class="p" type="submit">Add</button>
+  </form>
+
+  <div class="bar">
+    <label>Month<input id="month" type="month"></label>
+    <button id="csv" type="button">Download CSV</button>
+  </div>
+
+  <div class="cols">
+    <section class="box"><h2>Transactions</h2><ul id="list"></ul></section>
+    <section class="box"><h2>Spending by category</h2><div id="break"></div></section>
+  </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+const CATS = { expense: ["Food", "Transport", "Study", "Shopping", "Bills", "Other"], income: ["Allowance", "Salary", "Other"] };
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const money = n => "฿" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const el = (t, p = {}, k = []) => { const n = Object.assign(document.createElement(t), p); [].concat(k).forEach(x => n.append(x)); return n; };
+let items = [];
+
+function fillCats() {
+  $("cat").replaceChildren(...CATS[$("type").value].map(c => el("option", { value: c, textContent: c })));
+}
+
+async function load() {
+  const month = $("month").value;
+  let q = App.sb.from("expenses").select("*").order("date", { ascending: false }).order("created_at", { ascending: false });
+  if (month) {
+    const [y, m] = month.split("-").map(Number);
+    q = q.gte("date", month + "-01").lt("date", m === 12 ? (y + 1) + "-01-01" : y + "-" + pad(m + 1) + "-01");
+  }
+  const { data, error } = await q;
+  if (error) return App.notify("Could not load data: " + error.message, true);
+  if (month !== $("month").value) return;       // a newer request is in flight
+  items = data.map(r => ({ ...r, amount: Number(r.amount) }));
+  render();
+}
+
+function render() {
+  const inc = items.filter(i => i.type === "income").reduce((s, i) => s + i.amount, 0);
+  const exp = items.filter(i => i.type === "expense").reduce((s, i) => s + i.amount, 0);
+  $("inc").textContent = money(inc); $("exp").textContent = money(exp);
+  $("bal").textContent = money(inc - exp);
+  $("bal").className = inc - exp < 0 ? "exp" : "inc";
+
+  $("list").replaceChildren(...(items.length ? items.map(i => el("li", { className: "t" }, [
+    el("div", { className: "m" }, [el("strong", { textContent: i.category }), el("small", { textContent: i.date + (i.note ? " · " + i.note : "") })]),
+    el("strong", { className: i.type === "income" ? "inc" : "exp", textContent: (i.type === "income" ? "+" : "−") + money(i.amount) }),
+    el("button", { className: "del", type: "button", textContent: "Delete", ariaLabel: "Delete " + i.category + " " + money(i.amount), onclick: async () => {
+      const { error } = await App.sb.from("expenses").delete().eq("id", i.id);
+      if (error) return App.notify(error.message, true);
+      load();
+    } })
+  ])) : [el("p", { className: "empty", textContent: "No transactions this month. Add one above." })]));
+
+  const by = {};
+  items.filter(i => i.type === "expense").forEach(i => by[i.category] = (by[i.category] || 0) + i.amount);
+  const max = Math.max(0, ...Object.values(by));
+  $("break").replaceChildren(...(max ? Object.entries(by).sort((a, b) => b[1] - a[1]).map(([c, v]) =>
+    el("div", { className: "row" }, [c + " – " + money(v) + " (" + Math.round(v / exp * 100) + "%)", el("div", { style: "width:" + (v / max * 100) + "%" })]))
+    : [el("p", { className: "empty", textContent: "Nothing spent yet." })]));
+}
+
+$("type").onchange = fillCats;
+$("month").onchange = load;
+$("form").onsubmit = async e => {
+  e.preventDefault();
+  const amount = parseFloat($("amount").value);
+  if (!(amount > 0)) return;
+  const btn = e.submitter; btn.disabled = true;
+  const { error } = await App.sb.from("expenses").insert({
+    type: $("type").value, amount, category: $("cat").value, date: $("date").value, note: $("note").value.trim()
+  });
+  btn.disabled = false;
+  if (error) return App.notify("Could not save: " + error.message, true);
+  $("amount").value = ""; $("note").value = "";
+  $("month").value = $("date").value.slice(0, 7);
+  App.notify("Saved.");
+  await load(); $("amount").focus();
+};
+$("csv").onclick = async () => {
+  const { data, error } = await App.sb.from("expenses").select("*").order("date");
+  if (error) return App.notify(error.message, true);
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const csv = ["Date,Type,Category,Amount,Note", ...data.map(i => [i.date, i.type, i.category, i.amount, q(i.note)].join(","))].join("\n");
+  const a = el("a", { href: URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv" })), download: "expenses.csv" });
+  a.click(); URL.revokeObjectURL(a.href);
+};
+
+$("date").value = todayStr();
+$("month").value = todayStr().slice(0, 7);
+fillCats();
+App.start({ onUser: load, onSignedOut: () => { items = []; render(); } });
+</script>
+</body>
+</html>

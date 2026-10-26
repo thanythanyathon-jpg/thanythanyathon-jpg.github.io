@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thanyathon Kitsakun – Resume & Portfolio</title>
+<meta name="description" content="Resume and portfolio of Thanyathon Kitsakun">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Bricolage+Grotesque:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f4f7; --panel:#ffffff; --ink:#16233b; --muted:#5b6880; --line:#d8dfe8;
+  --accent:#2c4fd8; --accent-ink:#ffffff; --tag:#e4eafb;
+  --display:"Bricolage Grotesque","IBM Plex Sans Thai",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--accent-ink:#0f1624;--tag:#22305a}
+}
+:root[data-theme="dark"]{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--accent-ink:#0f1624;--tag:#22305a}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--body)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px;display:grid;grid-template-columns:300px 1fr;gap:40px}
+aside{position:sticky;top:24px;align-self:start}
+.avatar{width:96px;height:96px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:700 38px var(--display);overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+h1{font:700 34px/1.15 var(--display);margin:18px 0 4px;letter-spacing:-.02em}
+.role{color:var(--muted);margin:0 0 20px}
+.contact{list-style:none;padding:0;margin:0 0 20px;display:grid;gap:6px;font-size:15px}
+.contact a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+.contact a:hover{border-color:var(--accent)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:500 14px var(--body);padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:hover{border-color:var(--accent)}
+section{margin-bottom:48px}
+h2{font:700 24px var(--display);margin:0 0 16px;letter-spacing:-.01em}
+.lead{font-size:18px;max-width:62ch}
+.job{padding:0 0 22px 20px;border-left:2px solid var(--line);position:relative;margin-left:4px}
+.job::before{content:"";position:absolute;left:-6px;top:8px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.job h3{margin:0;font-size:17px;font-weight:600}
+.meta{color:var(--muted);font-size:14px;margin:0 0 6px}
+.job ul{margin:6px 0 0;padding-left:18px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.filters button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:18px}
+.card p{margin:0;color:var(--muted);font-size:15px;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--tag);border-radius:999px;padding:1px 10px;font-size:13px}
+.links{display:flex;gap:14px;font-size:14px;font-weight:500}
+.skills{display:grid;gap:10px}
+.skills div{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.skills b{min-width:110px;font-weight:600}
+.edu{margin:0 0 10px}
+footer{color:var(--muted);font-size:13px}
+@media (max-width:820px){.wrap{grid-template-columns:1fr;gap:24px}aside{position:static}}
+@media print{
+  body{background:#fff;color:#000;font-size:12px}
+  .wrap{display:block;padding:0}aside{position:static;margin-bottom:16px}
+  nav,.filters,footer,.links{display:none}
+  .card,.job{break-inside:avoid}
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside>
+    <div class="avatar" id="avatar"></div>
+    <h1 id="name"></h1>
+    <p class="role" id="title"></p>
+    <ul class="contact" id="contact"></ul>
+    <nav>
+      <a class="btn primary" href="#projects">View projects</a>
+      <button class="btn" id="themeBtn" type="button" aria-label="Switch light or dark mode">Theme</button>
+    </nav>
+  </aside>
+
+  <main>
+    <section id="about"><h2>About</h2><p class="lead" id="summary"></p></section>
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="filters" id="filters" role="group" aria-label="Filter projects by category"></div>
+      <div class="grid" id="projectGrid"></div>
+    </section>
+    <section id="skills"><h2>Skills</h2><div class="skills" id="skillList"></div></section>
+    <section id="education"><h2>Education</h2><div id="eduList"></div></section>
+    <footer>Last updated: <span id="updated"></span></footer>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Edit your information here (nothing else needs to change)
+   ============================================================ */
+const DATA = {
+  name: "Thanyathon Kitsakun",
+  title: "Student & Aspiring Web Developer",
+  photo: "",            // e.g. "images/me.jpg", or leave empty to show your initial
+  updated: "October 2026",
+  contact: [
+    { label: "your.email@example.com", href: "thanyathon.kis@stu.mahidol.edu" },
+    { label: "github.com/your-username", href: "https://github.com/thanythanyathon-jpg" },
+    { label: "linkedin.com/in/your-name", href: "https://www.linkedin.com/in/thanyathon-kitsakun-724b40446/" }
+  ],
+  summary: "Student who enjoys building small, practical web tools. Currently looking for internships and projects where I can learn and contribute.",
+  projects: [
+    { name: "Expense Tracker", desc: "Log income and spending, see monthly totals and a category breakdown. Sign in to keep your data safely in the cloud.", tags: ["Web app"], links: [{ label: "Open app", href: "expense.html" }] },
+    { name: "Meeting Room Booking", desc: "Pick a room, date and time on a daily availability grid. Shared live between users; double bookings are blocked by the database.", tags: ["Web app"], links: [{ label: "Open app", href: "booking.html" }] }
+  ],
+  skills: {
+    "Web": ["HTML", "CSS", "JavaScript"],
+    "Tools": ["Git", "GitHub", "VS Code"],
+    "Spoken languages": ["Thai (native)", "English"]
+  },
+  education: [
+    { school: "Mahidol University", degree: "Bachelor's degree in Computer Science (in progress)", period: "2025 – 2028" }
+  ]
+};
+
+/* ---------------- Rendering (no need to edit) ---------------- */
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, kids = []) => {
+  const n = Object.assign(document.createElement(tag), props);
+  [].concat(kids).forEach(k => n.append(k));
+  return n;
+};
+
+document.title = DATA.name + " – Resume & Portfolio";
+$("name").textContent = DATA.name;
+$("title").textContent = DATA.title;
+$("summary").textContent = DATA.summary;
+$("updated").textContent = DATA.updated;
+
+if (DATA.photo) $("avatar").append(el("img", { src: DATA.photo, alt: DATA.name }));
+else $("avatar").textContent = DATA.name.trim().charAt(0);
+
+DATA.contact.forEach(c =>
+  $("contact").append(el("li", {}, c.href ? el("a", { href: c.href, textContent: c.label, target: c.href.startsWith("http") ? "_blank" : "", rel: "noopener" }) : c.label)));
+
+/* Projects + category filter */
+const allTags = ["All", ...new Set(DATA.projects.flatMap(p => p.tags))];
+let current = "All";
+function renderProjects() {
+  $("projectGrid").replaceChildren(...DATA.projects
+    .filter(p => current === "All" || p.tags.includes(current))
+    .map(p => el("article", { className: "card" }, [
+      el("h3", { textContent: p.name }),
+      el("p", { textContent: p.desc }),
+      el("div", { className: "tags" }, p.tags.map(t => el("span", { className: "tag", textContent: t }))),
+      el("div", { className: "links" }, p.links.map(l => el("a", { href: l.href, textContent: l.label, target: "_blank", rel: "noopener" })))
+    ])));
+  [...$("filters").children].forEach(b => b.setAttribute("aria-pressed", b.textContent === current));
+}
+allTags.forEach(t => $("filters").append(el("button", { className: "btn", type: "button", textContent: t, onclick: () => { current = t; renderProjects(); } })));
+renderProjects();
+if (DATA.projects.length < 4) $("filters").style.display = "none";
+
+Object.entries(DATA.skills).forEach(([group, items]) =>
+  $("skillList").append(el("div", {}, [el("b", { textContent: group }), ...items.map(s => el("span", { className: "tag", textContent: s }))])));
+
+DATA.education.forEach(e => $("eduList").append(el("p", { className: "edu" }, [
+  el("strong", { textContent: e.school }), el("br"), e.degree + " · " + e.period
+])));
+
+/* Theme toggle */
+$("themeBtn").onclick = () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+};
+</script>
+</body>
+</html>

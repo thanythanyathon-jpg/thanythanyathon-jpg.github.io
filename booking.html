@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Room Booking</title>
+<style>
+:root{--bg:#f1f4f7;--panel:#fff;--ink:#16233b;--muted:#5b6880;--line:#d8dfe8;--accent:#2c4fd8;--on:#fff;--busy:#f3d3d3;--busyink:#8a2a2a;--free:#e3f3ea;--err:#c23b3b;--ok:#14804a}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--on:#0f1624;--busy:#4a2630;--busyink:#ffb4b4;--free:#1d3a33;--err:#ff8d8d;--ok:#5fd39a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--accent)}h1{margin:8px 0 20px;font-size:28px}h2{font-size:18px;margin:0 0 12px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+input,select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{cursor:pointer}button.p{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}
+.scroll{overflow-x:auto}
+table{border-collapse:separate;border-spacing:3px;width:100%;min-width:640px}
+th{font-weight:500;font-size:13px;color:var(--muted);text-align:center}
+th.r{text-align:left;color:var(--ink);white-space:nowrap;padding-right:8px}
+td{padding:0;height:38px}
+td button,td span{display:block;width:100%;height:100%;border:0;border-radius:6px;font-size:12px;padding:0 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:38px}
+td button{background:var(--free);color:var(--ink)}
+td span{background:var(--busy);color:var(--busyink)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+#msg{margin:10px 0 0;min-height:1.6em;font-weight:500}
+.err{color:var(--err)}.ok{color:var(--ok)}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+li div{flex:1;min-width:0;overflow-wrap:anywhere}li small{color:var(--muted);display:block}
+.empty{color:var(--muted);margin:0}
+.login{display:grid;gap:10px;max-width:360px}
+.userbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;color:var(--muted);font-size:14px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;max-width:90vw;z-index:9}
+#toast:empty{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html">← Back to portfolio</a>
+  <h1>Meeting Room Booking</h1>
+  <div id="gate"></div>
+  <div id="app" hidden>
+  <section class="box">
+    <label style="max-width:200px">Date<input type="date" id="date"></label>
+    <h2 style="margin-top:16px">Availability (08:00–18:00) – click a free hour to start a booking</h2>
+    <div class="scroll"><table id="grid"></table></div>
+  </section>
+
+  <section class="box">
+    <h2>New booking</h2>
+    <form id="form">
+      <label>Room<select id="room"></select></label>
+      <label>Start<select id="start"></select></label>
+      <label>End<select id="end"></select></label>
+      <label>Your name<input id="who" maxlength="40" required></label>
+      <label>Purpose<input id="why" maxlength="60" required></label>
+      <button class="p" type="submit">Book room</button>
+    </form>
+    <p id="msg" role="status"></p>
+  </section>
+
+  <section class="box">
+    <h2>Bookings on this date</h2>
+    <ul id="list"></ul>
+  </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+const ROOMS = [{ id: "A", name: "Room A", cap: 6 }, { id: "B", name: "Room B", cap: 12 }, { id: "C", name: "Room C", cap: 20 }];
+const OPEN = 8 * 60, CLOSE = 18 * 60;
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+const fmt = m => pad(Math.floor(m / 60)) + ":" + pad(m % 60);
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const el = (t, p = {}, k = []) => { const n = Object.assign(document.createElement(t), p); [].concat(k).forEach(x => n.append(x)); return n; };
+const roomName = id => ROOMS.find(r => r.id === id).name;
+const hit = (b, room, s, e) => b.room === room && s < b.end_min && e > b.start_min;
+let items = [], channel = null;
+
+function msg(text, ok) { $("msg").textContent = text; $("msg").className = ok ? "ok" : "err"; }
+
+async function load() {
+  const date = $("date").value;
+  if (!date) return;
+  const { data, error } = await App.sb.from("bookings").select("*").eq("date", date).order("start_min");
+  if (error) return App.notify("Could not load bookings: " + error.message, true);
+  if (date !== $("date").value) return;          // user changed the date meanwhile
+  items = data; render();
+}
+
+function renderGrid() {
+  const head = el("tr", {}, [el("th"), ...Array.from({ length: 10 }, (_, i) => el("th", { scope: "col", textContent: fmt((8 + i) * 60) }))]);
+  const rows = ROOMS.map(r => el("tr", {}, [
+    el("th", { className: "r", scope: "row", textContent: r.name + " (" + r.cap + " seats)" }),
+    ...Array.from({ length: 10 }, (_, i) => {
+      const s = (8 + i) * 60, b = items.find(x => hit(x, r.id, s, s + 60));
+      return el("td", {}, b
+        ? el("span", { textContent: b.who, title: b.who + " – " + b.why + " (" + fmt(b.start_min) + "–" + fmt(b.end_min) + ")" })
+        : el("button", { type: "button", textContent: "Free", ariaLabel: r.name + " free at " + fmt(s), onclick: () => { $("room").value = r.id; $("start").value = s; fillEnd(s + 60); $("who").focus(); } }));
+    })
+  ]));
+  $("grid").replaceChildren(head, ...rows);
+}
+
+function renderList() {
+  $("list").replaceChildren(...(items.length ? items.map(b => el("li", {}, [
+    el("div", {}, [el("strong", { textContent: roomName(b.room) + " · " + fmt(b.start_min) + "–" + fmt(b.end_min) }), el("small", { textContent: b.who + " – " + b.why })]),
+    ...(App.user && b.user_id === App.user.id ? [el("button", { type: "button", textContent: "Cancel", ariaLabel: "Cancel booking " + roomName(b.room) + " " + fmt(b.start_min), onclick: async () => {
+      const { error } = await App.sb.from("bookings").delete().eq("id", b.id);
+      if (error) return msg(error.message);
+      msg("Booking cancelled.", true); load();
+    } })] : [])
+  ])) : [el("p", { className: "empty", textContent: "No bookings on this date yet." })]));
+}
+
+function render() { renderGrid(); renderList(); }
+
+function fillEnd(select) {
+  const s = parseInt($("start").value), opts = [];
+  for (let m = s + 30; m <= CLOSE; m += 30) opts.push(el("option", { value: m, textContent: fmt(m) }));
+  $("end").replaceChildren(...opts);
+  $("end").value = select && select <= CLOSE ? select : (s + 60 <= CLOSE ? s + 60 : CLOSE);
+}
+
+ROOMS.forEach(r => $("room").append(el("option", { value: r.id, textContent: r.name + " (" + r.cap + " seats)" })));
+for (let m = OPEN; m < CLOSE; m += 30) $("start").append(el("option", { value: m, textContent: fmt(m) }));
+$("start").onchange = () => fillEnd();
+$("date").onchange = () => { msg("", true); load(); };
+
+$("form").onsubmit = async e => {
+  e.preventDefault();
+  const room = $("room").value, date = $("date").value;
+  const start = parseInt($("start").value), end = parseInt($("end").value);
+  const who = $("who").value.trim(), why = $("why").value.trim();
+  if (!date) return msg("Choose a date.");
+  if (!who || !why) return msg("Enter your name and the purpose.");
+  if (end <= start) return msg("End time must be after start time.");
+  const now = new Date();
+  if (date < todayStr() || (date === todayStr() && start < now.getHours() * 60 + now.getMinutes()))
+    return msg("That time has already passed. Pick a later time.");
+  const clash = items.find(b => hit(b, room, start, end));
+  if (clash) return msg(roomName(room) + " is already booked " + fmt(clash.start_min) + "–" + fmt(clash.end_min) + " by " + clash.who + ". Pick another time or room.");
+  const btn = e.submitter; btn.disabled = true;
+  const { error } = await App.sb.from("bookings").insert({ room, date, start_min: start, end_min: end, who, why });
+  btn.disabled = false;
+  if (error) {
+    await load();
+    return msg(error.code === "23P01" ? "Someone just booked that slot. Please pick another time." : "Could not book: " + error.message);
+  }
+  msg("Booked " + roomName(room) + " on " + date + ", " + fmt(start) + "–" + fmt(end) + ".", true);
+  $("why").value = "";
+  load();
+};
+
+$("date").value = todayStr();
+$("date").min = todayStr();
+fillEnd();
+App.start({
+  onUser: () => {
+    load();
+    if (!channel) channel = App.sb.channel("bookings-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => load()).subscribe();
+  },
+  onSignedOut: () => { if (channel) { App.sb.removeChannel(channel); channel = null; } items = []; }
+});
+</script>
+</body>
+</html>
