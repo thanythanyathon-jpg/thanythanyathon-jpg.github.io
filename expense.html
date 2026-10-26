@@ -17,7 +17,8 @@ a{color:var(--accent)}h1{margin:8px 0 20px;font-size:28px}h2{font-size:18px;marg
 .sum b{display:block;font-size:22px}.sum span{color:var(--muted);font-size:14px}
 .inc{color:var(--inc)}.exp{color:var(--exp)}
 form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end;margin-bottom:16px}
-label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+label{display:grid;gap:4px;font-size:14px;color:var(--muted);min-width:0}
+label input,label select{width:100%;min-width:0}
 input,select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 button{cursor:pointer}button.p{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}
 .bar{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px}

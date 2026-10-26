@@ -13,7 +13,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-app
 a{color:var(--accent)}h1{margin:8px 0 20px;font-size:28px}h2{font-size:18px;margin:0 0 12px}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
-label{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+label{display:grid;gap:4px;font-size:14px;color:var(--muted);min-width:0}
+label input,label select{width:100%;min-width:0}
 input,select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 button{cursor:pointer}button.p{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}
 .scroll{overflow-x:auto}
