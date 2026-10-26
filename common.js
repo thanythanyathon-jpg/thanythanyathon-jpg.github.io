@@ -52,13 +52,52 @@
     ]);
   }
 
+  /* Demo mode: same query API as Supabase, but data lives in this browser (localStorage). */
+  function localClient() {
+    const read = t => { try { return JSON.parse(localStorage.getItem("local." + t)) || []; } catch (e) { return []; } };
+    const write = (t, rows) => { try { localStorage.setItem("local." + t, JSON.stringify(rows)); } catch (e) {} };
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const from = t => {
+      const q = { op: "select", filters: [], orders: [] };
+      const b = {
+        select() { q.op = "select"; return b; },
+        insert(row) { q.op = "insert"; q.row = row; return b; },
+        delete() { q.op = "delete"; return b; },
+        eq(c, v) { q.filters.push(r => r[c] === v); return b; },
+        gte(c, v) { q.filters.push(r => r[c] >= v); return b; },
+        lt(c, v) { q.filters.push(r => r[c] < v); return b; },
+        order(c, o) { q.orders.push([c, !(o && o.ascending === false)]); return b; },
+        then(res, rej) { return Promise.resolve(run()).then(res, rej); }
+      };
+      function run() {
+        const rows = read(t);
+        if (q.op === "insert") {
+          const r = Object.assign({ id: uid(), user_id: "local", created_at: new Date().toISOString() }, q.row);
+          if (t === "bookings" && rows.some(x => x.room === r.room && x.date === r.date && r.start_min < x.end_min && r.end_min > x.start_min))
+            return { error: { code: "23P01", message: "Overlapping booking" } };
+          rows.push(r); write(t, rows); return { error: null };
+        }
+        if (q.op === "delete") { write(t, rows.filter(r => !q.filters.every(f => f(r)))); return { error: null }; }
+        const out = rows.filter(r => q.filters.every(f => f(r)));
+        q.orders.slice().reverse().forEach(([c, asc]) => out.sort((x, y) => (x[c] > y[c] ? 1 : x[c] < y[c] ? -1 : 0) * (asc ? 1 : -1)));
+        return { data: out, error: null };
+      }
+      return b;
+    };
+    return { from, channel: () => ({ on() { return this; }, subscribe() { return this; } }), removeChannel() {}, auth: {} };
+  }
+
   /* opts: { onUser(user), onSignedOut() } */
   App.start = function (opts) {
     const gate = document.getElementById("gate"), app = document.getElementById("app");
-    if (!window.supabase || !cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-") || !cfg.SUPABASE_ANON_KEY || cfg.SUPABASE_ANON_KEY.includes("YOUR-")) {
-      gate.replaceChildren(el("section", { className: "box" }, [
-        el("h2", { textContent: "Setup needed" }),
-        el("p", { textContent: "Add your Supabase project URL and anon key to config.js, then reload. Steps are in README.md." })]));
+    const configured = window.supabase && cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("YOUR-") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("YOUR-");
+    if (!configured) {                      // works out of the box, no backend needed
+      App.local = true;
+      App.sb = localClient();
+      App.user = { id: "local", is_anonymous: true };
+      gate.replaceChildren(el("div", { className: "userbar" }, [el("span", { textContent: "Demo mode: your data is saved only in this browser. Connect Supabase in config.js to sync accounts and share data (see README)." })]));
+      app.hidden = false;
+      opts.onUser(App.user);
       return;
     }
     App.sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);

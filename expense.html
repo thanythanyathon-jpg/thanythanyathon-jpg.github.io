@@ -129,7 +129,7 @@ $("form").onsubmit = async e => {
   e.preventDefault();
   const amount = parseFloat($("amount").value);
   if (!(amount > 0)) return;
-  const btn = e.submitter; btn.disabled = true;
+  const btn = e.submitter || e.target.querySelector("button[type=submit]"); btn.disabled = true;
   const { error } = await App.sb.from("expenses").insert({
     type: $("type").value, amount, category: $("cat").value, date: $("date").value, note: $("note").value.trim()
   });

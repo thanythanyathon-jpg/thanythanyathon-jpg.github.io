@@ -147,7 +147,7 @@ $("form").onsubmit = async e => {
     return msg("That time has already passed. Pick a later time.");
   const clash = items.find(b => hit(b, room, start, end));
   if (clash) return msg(roomName(room) + " is already booked " + fmt(clash.start_min) + "–" + fmt(clash.end_min) + " by " + clash.who + ". Pick another time or room.");
-  const btn = e.submitter; btn.disabled = true;
+  const btn = e.submitter || e.target.querySelector("button[type=submit]"); btn.disabled = true;
   const { error } = await App.sb.from("bookings").insert({ room, date, start_min: start, end_min: end, who, why });
   btn.disabled = false;
   if (error) {
