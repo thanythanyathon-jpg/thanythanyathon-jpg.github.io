@@ -1,57 +1,54 @@
-# Resume & Portfolio
+# 🎓 Thanyathon Kitsakun | IT Student & Aspiring Tech Intern
 
-เว็บไซต์เรซูเม่และสะสมผลงาน เป็นไฟล์ HTML ไฟล์เดียว ไม่ต้องติดตั้งอะไร
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=61AFEF&center=true&vCenter=true&width=500&lines=2nd-Year+IT+Student;Seeking+Tech+Internship;Passionate+Learner;Systems+%26+Code+Enthusiast" alt="Typing SVG" />
+</p>
 
-## วิธีแก้ข้อมูลของตัวเอง
+<p align="center">
+  <a href="https://linkedin.com/in/YOUR_LINKEDIN"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"/></a>
+  <a href="mailto:your.email@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white"/></a>
+  <a href="https://yourportfolio.com"><img src="https://img.shields.io/badge/Portfolio-4285F4?style=for-the-badge&logo=google-chrome&logoColor=white"/></a>
+</p>
 
-เปิด `index.html` แล้วแก้ตรงก้อน `const DATA = { ... }` ที่ด้านล่างของไฟล์
-(ชื่อ, ติดต่อ, ผลงาน, ทักษะ, การศึกษา) ส่วนอื่นไม่ต้องแก้
+---
 
-- เพิ่มผลงานใหม่: คัดลอกบรรทัดใน `projects` แล้วแก้ข้อความ ตัวกรองหมวดจะเพิ่มให้อัตโนมัติจาก `tags`
-- ใส่รูปโปรไฟล์: สร้างโฟลเดอร์ `images/` ใส่รูป แล้วตั้ง `photo: "images/me.jpg"`
+## 🚀 About Me
 
-## วิธีอัปโหลดขึ้น GitHub (ผ่านเว็บ ไม่ต้องใช้คำสั่ง)
+> *"Eager to apply classroom fundamentals to real-world IT challenges."*
 
-1. เข้า https://github.com/new ตั้งชื่อ repository เป็น `ชื่อผู้ใช้.github.io` (เช่น `somchai.github.io`) เลือก Public แล้วกด Create repository
-2. กด **uploading an existing file** แล้วลากไฟล์ `index.html`, `expense.html`, `booking.html`, `config.js`, `common.js` และ `README.md` (กับโฟลเดอร์ `images` ถ้ามี) ลงไป
-3. กด **Commit changes**
-4. รอประมาณ 1–2 นาที เว็บจะอยู่ที่ `https://ชื่อผู้ใช้.github.io`
+Hi there! 👋 I am a **2nd-year Computer Science / IT student** actively looking for an **Internship** in **Software Engineering / QA Tester**. 
 
-ถ้าใช้ชื่อ repository อื่น (เช่น `portfolio`) ให้ไปที่ **Settings → Pages** เลือก Branch `main` และโฟลเดอร์ `/ (root)` แล้วกด Save
-เว็บจะอยู่ที่ `https://ชื่อผู้ใช้.github.io/portfolio`
+I have a strong foundation in core IT fundamentals, object-oriented programming, and system administration. I love debugging, learning new frameworks, and working on hands-on technical projects.
 
-## วิธีอัปโหลดด้วยคำสั่ง Git
+- 🎓 **Education:** B.S. in Computer Science / IT at Mahidol University (Expected Graduation: 2029)
+- 🎯 **Looking For:** Summer / Term Internship in [Target Area]
+- 🌱 **Currently Studying:** Software Engineering, Web Application
+- ⚡ **Strengths:** Quick Learner, Great Adaptability
 
-```bash
-cd portfolio
-git init
-git add .
-git commit -m "Add resume and portfolio"
-git branch -M main
-git remote add origin https://github.com/ชื่อผู้ใช้/ชื่อผู้ใช้.github.io.git
-git push -u origin main
-```
+---
 
-ครั้งต่อไปที่แก้ไข ใช้ `git add . && git commit -m "Update" && git push`
+## 🛠️ Skills & Tech Stack
 
-## โหมดใช้งานทันที (ไม่ต้องตั้งค่าอะไรเพิ่ม)
+### 💻 Programming & Scripting
+![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 
-หลังอัปโหลดขึ้น GitHub Pages แอป Expense และ Booking ใช้งานได้เลย โดยเก็บข้อมูลในเบราว์เซอร์ของผู้ใช้แต่ละคน
-(หน้าแอปจะแสดงข้อความ "Demo mode") ข้อมูลจะไม่ถูกแชร์ข้ามเครื่องหรือข้ามผู้ใช้
+### 🐧 Operating Systems & Tools
+![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white)
+![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=flat-square&logo=visual-studio-code&logoColor=white)
 
-## อัปเกรดเป็นระบบจริง: ล็อกอิน + ข้อมูลบนคลาวด์ + ทุกคนเห็นการจองเดียวกัน (ไม่บังคับ ประมาณ 10 นาที)
+---
 
-ใช้ Supabase (ฟรี) เมื่อใส่คีย์ใน `config.js` แอปจะสลับเป็นโหมดคลาวด์อัตโนมัติ
+## 📄 Resume & Contact
 
-1. สมัครที่ https://supabase.com แล้วกด **New project** (จดรหัสผ่านฐานข้อมูลไว้)
-2. ไปที่ **SQL Editor → New query** วางเนื้อหาจากไฟล์ `supabase-setup.sql` ทั้งหมด แล้วกด **Run** (รันซ้ำได้ ไม่เสียหาย)
-3. ไปที่ **Project Settings → API** คัดลอก **Project URL** และ **anon public key** ไปใส่ในไฟล์ `config.js`
-   - ห้ามใช้คีย์ `service_role` เด็ดขาด (anon key เผยแพร่ได้ เพราะมี Row Level Security คุมอยู่)
-4. ไปที่ **Authentication → Sign In / Providers**
-   - Email: ปิด **Confirm email** ถ้าอยากให้สมัครแล้วใช้ได้ทันที
-   - เปิด **Allow anonymous sign-ins** เพื่อให้ปุ่ม "Continue as guest" ใช้ได้
-5. ไปที่ **Authentication → URL Configuration** ตั้ง **Site URL** เป็นที่อยู่เว็บของคุณ เช่น `https://ชื่อผู้ใช้.github.io`
-6. อัปโหลด `config.js` ที่แก้แล้วขึ้น GitHub ทับไฟล์เดิม
+Feel free to check out my full resume or get in touch:
 
-ความปลอดภัยในฐานข้อมูล: Expense เห็นและลบได้เฉพาะของตัวเอง, Booking ทุกคนที่ล็อกอินเห็นการจองทั้งหมดแต่ยกเลิกได้เฉพาะของตัวเอง
-และฐานข้อมูลไม่ยอมให้จองเวลาซ้อนกันแม้สองคนกดพร้อมกัน
+- 📧 **Email:** `thanythanyathon@gmail.com`
+- 💼 **LinkedIn:** (https://www.linkedin.com/in/thanyathon-kitsakun-724b40446/)
+
+---
+
+<p align="center">
+  <i>"Ready to learn, contribute, and grow with a great engineering team!"</i>
+</p>
