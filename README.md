@@ -1,4 +1,4 @@
-# 🎓 Thanyathon Kitsakun | IT Student & Aspiring Tech Intern
+# 🎓 Thanyathon Kitsakun | ICT Student & Aspiring Tech Intern
 
 <p align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=61AFEF&center=true&vCenter=true&width=500&lines=2nd-Year+IT+Student;Seeking+Tech+Internship;Passionate+Learner;Systems+%26+Code+Enthusiast" alt="Typing SVG" />
