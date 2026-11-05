@@ -16,9 +16,8 @@
   --body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--accent-ink:#0f1624;--tag:#22305a}
+  :root{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--accent-ink:#0f1624;--tag:#22305a}
 }
-:root[data-theme="dark"]{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--accent-ink:#0f1624;--tag:#22305a}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 var(--body)}
@@ -67,6 +66,50 @@ footer{color:var(--muted);font-size:13px}
   .card,.job{break-inside:avoid}
   .grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ===== visual upgrade (same palette, fonts and layout) ===== */
+body{background:var(--bg);background:radial-gradient(900px 420px at 88% -8%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 70%),radial-gradient(700px 380px at -6% 14%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 70%),var(--bg);background-attachment:fixed}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 1px 2px rgba(22,35,59,.04),0 14px 34px -14px rgba(22,35,59,.22)}
+.avatar{width:104px;height:104px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,#7b3fe4));box-shadow:0 0 0 4px var(--panel),0 0 0 6px var(--accent)}
+h1{font-size:30px}
+.role{margin-bottom:12px}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;padding:4px 12px;border-radius:999px;background:var(--tag);margin:0 0 20px}
+.status .dot{width:8px;height:8px;border-radius:50%;background:#22a56b;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,165,107,.5)}70%,100%{box-shadow:0 0 0 8px rgba(34,165,107,0)}}
+.contact{gap:2px}
+.contact a{display:flex;align-items:center;gap:10px;border:0;padding:7px 8px;margin:0 -8px;border-radius:8px;overflow-wrap:anywhere;transition:background .15s}
+.contact a:hover{background:var(--tag)}
+.contact .ic{display:inline-flex;color:var(--accent)}
+.contact svg{width:18px;height:18px;flex:none}
+.btn{transition:transform .15s,filter .15s,border-color .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary:hover{filter:brightness(1.1)}
+section{margin-bottom:56px}
+h2{display:flex;align-items:center;gap:12px;font-size:26px}
+h2::before{content:"";width:28px;height:4px;border-radius:2px;background:var(--accent)}
+.lead{font-size:19px;line-height:1.8}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 20px;min-width:120px}
+.stat b{display:block;font:700 30px/1.1 var(--display);color:var(--accent)}
+.stat span{font-size:13px;color:var(--muted)}
+.card{position:relative;padding:22px;border-radius:16px;overflow:hidden;gap:10px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--accent),transparent)}
+.card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 38px -18px color-mix(in srgb,var(--accent) 55%,transparent)}
+.pico{width:48px;height:48px;border-radius:12px;background:var(--tag);display:grid;place-items:center;font-size:24px}
+.links a{padding:6px 14px;border-radius:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;transition:filter .15s}
+.links a::after{content:" \2192"}
+.links a:hover{filter:brightness(1.12)}
+.skills{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.skills div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;align-content:flex-start}
+.skills b{width:100%;min-width:0;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
+.tag{padding:3px 12px;font-weight:500;transition:background .15s,color .15s}
+.skills .tag:hover{background:var(--accent);color:var(--accent-ink)}
+.edu{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:16px 18px}
+footer{text-align:center;padding-top:8px}
+@media (prefers-reduced-motion:no-preference){.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}.reveal.in{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.status .dot{animation:none}.card,.btn{transition:none}}
+@media (max-width:820px){aside{padding:22px}h2{font-size:24px}}
+@media print{aside{border:0;box-shadow:none;padding:0}.reveal{opacity:1!important;transform:none!important}.status,.stats{display:none}.card::before{display:none}body{background:#fff}}
 </style>
 </head>
 <body>
@@ -75,15 +118,15 @@ footer{color:var(--muted);font-size:13px}
     <div class="avatar" id="avatar"></div>
     <h1 id="name"></h1>
     <p class="role" id="title"></p>
+    <p class="status" id="status" hidden><span class="dot"></span><span id="statusText"></span></p>
     <ul class="contact" id="contact"></ul>
     <nav>
       <a class="btn primary" href="#projects">View projects</a>
-      <button class="btn" id="themeBtn" type="button" aria-label="Switch light or dark mode">Theme</button>
     </nav>
   </aside>
 
   <main>
-    <section id="about"><h2>About</h2><p class="lead" id="summary"></p></section>
+    <section id="about"><h2>About</h2><p class="lead" id="summary"></p><div class="stats" id="stats"></div></section>
     <section id="projects">
       <h2>Projects</h2>
       <div class="filters" id="filters" role="group" aria-label="Filter projects by category"></div>
@@ -104,6 +147,7 @@ const DATA = {
   title: "Student & Aspiring Web Developer",
   photo: "",            // e.g. "images/me.jpg", or leave empty to show your initial
   updated: "October 2026",
+  status: "Open to internships",
   contact: [
     { label: "thanythanyathon@gmail.com", href: "mailto:thanythanyathon@gmail.com" },
     { label: "My GitHub", href: "https://github.com/thanythanyathon-jpg" },
@@ -111,11 +155,13 @@ const DATA = {
   ],
   summary: "Student who enjoys building small, practical web tools. Currently looking for internships and projects where I can learn and contribute.",
   projects: [
-    { name: "Expense Tracker", desc: "Log income and spending, see monthly totals and a category breakdown. Works instantly in your browser.", tags: ["Web app"], links: [{ label: "Open app", href: "expense.html" }] },
-    { name: "Meeting Room Booking", desc: "Pick a room, date and time on a daily availability grid. Double bookings are blocked automatically.", tags: ["Web app"], links: [{ label: "Open app", href: "booking.html" }] }
+    { icon: "💰", name: "Expense Tracker", desc: "Log income and spending, see monthly totals and a category breakdown. Works instantly in your browser.", tags: ["Web app"], links: [{ label: "Open app", href: "expense.html" }] },
+    { icon: "📅", name: "Meeting Room Booking", desc: "Pick a room, date and time on a daily availability grid. Double bookings are blocked automatically.", tags: ["Web app"], links: [{ label: "Open app", href: "booking.html" }] },
+    { icon: "⛅", name: "Weather App", desc: "Search any city with live suggestions for current conditions and a 7-day forecast, powered by the free Open-Meteo API.", tags: ["Web app", "API"], links: [{ label: "Open app", href: "weather.html" }] }
   ],
   skills: {
-    "Web": ["HTML", "CSS", "JavaScript"],
+    "Programming Languages": ["Python", "Java", "JavaScript"],
+    "Web": ["HTML", "CSS"],
     "Tools": ["Git", "GitHub", "VS Code"],
     "Spoken languages": ["Thai (native)", "English"]
   },
@@ -141,8 +187,19 @@ $("updated").textContent = DATA.updated;
 if (DATA.photo) $("avatar").append(el("img", { src: DATA.photo, alt: DATA.name }));
 else $("avatar").textContent = DATA.name.trim().charAt(0);
 
-DATA.contact.forEach(c =>
-  $("contact").append(el("li", {}, c.href ? el("a", { href: c.href, textContent: c.label, target: c.href.startsWith("http") ? "_blank" : "", rel: "noopener" }) : c.label)));
+const ICONS = {
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  github: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.34.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>',
+  linkedin: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm6.5 0h3.83v1.54h.05c.53-1 1.84-2.04 3.78-2.04 4.04 0 4.79 2.66 4.79 6.12V21h-4v-4.9c0-1.17-.02-2.67-1.63-2.67-1.63 0-1.88 1.27-1.88 2.58V21h-4V9.75z"/></svg>'
+};
+DATA.contact.forEach(c => {
+  const h = c.href || "";
+  const icon = /^mailto:/.test(h) ? ICONS.mail : /github\.com/.test(h) ? ICONS.github : /linkedin\.com/.test(h) ? ICONS.linkedin : "";
+  const label = el("span", { textContent: c.label });
+  $("contact").append(el("li", {}, h
+    ? el("a", { href: h, target: h.startsWith("http") ? "_blank" : "", rel: "noopener" }, [el("span", { className: "ic", innerHTML: icon }), label])
+    : label));
+});
 
 /* Projects + category filter */
 const allTags = ["All", ...new Set(DATA.projects.flatMap(p => p.tags))];
@@ -151,16 +208,17 @@ function renderProjects() {
   $("projectGrid").replaceChildren(...DATA.projects
     .filter(p => current === "All" || p.tags.includes(current))
     .map(p => el("article", { className: "card" }, [
+      el("div", { className: "pico", textContent: p.icon || "🚀", ariaHidden: "true" }),
       el("h3", { textContent: p.name }),
       el("p", { textContent: p.desc }),
       el("div", { className: "tags" }, p.tags.map(t => el("span", { className: "tag", textContent: t }))),
-      el("div", { className: "links" }, p.links.map(l => el("a", { href: l.href, textContent: l.label, target: "_blank", rel: "noopener" })))
+      el("div", { className: "links" }, p.links.map(l => el("a", { href: l.href, textContent: l.label, target: /^https?:/.test(l.href) ? "_blank" : "", rel: "noopener" })))
     ])));
   [...$("filters").children].forEach(b => b.setAttribute("aria-pressed", b.textContent === current));
 }
 allTags.forEach(t => $("filters").append(el("button", { className: "btn", type: "button", textContent: t, onclick: () => { current = t; renderProjects(); } })));
 renderProjects();
-if (DATA.projects.length < 4) $("filters").style.display = "none";
+if (allTags.length < 3) $("filters").style.display = "none";   // hide the filter only when there is nothing to filter
 
 Object.entries(DATA.skills).forEach(([group, items]) =>
   $("skillList").append(el("div", {}, [el("b", { textContent: group }), ...items.map(s => el("span", { className: "tag", textContent: s }))])));
@@ -169,12 +227,17 @@ DATA.education.forEach(e => $("eduList").append(el("p", { className: "edu" }, [
   el("strong", { textContent: e.school }), el("br"), e.degree + " · " + e.period
 ])));
 
-/* Theme toggle */
-$("themeBtn").onclick = () => {
-  const root = document.documentElement;
-  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-  root.dataset.theme = dark ? "light" : "dark";
-};
+/* Status badge + stats */
+if (DATA.status) { $("statusText").textContent = DATA.status; $("status").hidden = false; }
+const skillCount = Object.entries(DATA.skills).filter(([g]) => !/^spoken/i.test(g)).reduce((n, [, v]) => n + v.length, 0);
+[[DATA.projects.length, "Projects"], [skillCount, "Skills"]].forEach(([n, l]) =>
+  $("stats").append(el("div", { className: "stat" }, [el("b", { textContent: n }), el("span", { textContent: l })])));
+
+/* Fade-in on scroll (skipped for reduced-motion users or old browsers) */
+if ("IntersectionObserver" in window && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .08 });
+  document.querySelectorAll("main section").forEach(t => { t.classList.add("reveal"); io.observe(t); });
+}
 </script>
 </body>
 </html>

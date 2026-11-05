@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather App</title>
+<style>
+:root{--bg:#f1f4f7;--panel:#fff;--ink:#16233b;--muted:#5b6880;--line:#d8dfe8;--accent:#2c4fd8;--on:#fff;--err:#c23b3b}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1624;--panel:#17213a;--ink:#e8edf7;--muted:#9aa8c4;--line:#2a3756;--accent:#8aa2ff;--on:#0f1624;--err:#ff8d8d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--accent)}h1{margin:8px 0 20px;font-size:28px}h2{font-size:18px;margin:0 0 12px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+form{display:flex;gap:10px;flex-wrap:wrap}
+input,button{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.search{position:relative;flex:1 1 220px;min-width:0}
+.search input{width:100%}
+#sugg{position:absolute;z-index:20;left:0;right:0;top:calc(100% + 4px);margin:0;padding:4px;list-style:none;max-height:min(280px,50vh);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.2)}
+#sugg li{padding:10px;border-radius:7px;cursor:pointer}
+#sugg li.on,#sugg li:hover{background:var(--accent);color:var(--on)}
+#sugg li.hint,#sugg li.hint:hover{color:var(--muted);background:none;cursor:default}
+@media (max-width:560px){.search{flex-basis:100%}}
+button{cursor:pointer}button.p{background:var(--accent);color:var(--on);border-color:var(--accent);font-weight:600}
+button[aria-pressed="true"]{background:var(--accent);color:var(--on);border-color:var(--accent)}
+#status{min-height:1.6em;margin:0 0 12px;color:var(--muted)}#status.err{color:var(--err)}
+.now{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.big{font-size:72px;line-height:1}
+.temp{font-size:56px;font-weight:700;line-height:1}
+.now p{margin:4px 0;color:var(--muted)}
+.facts{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.facts span{display:block;color:var(--muted);font-size:14px}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
+.day{text-align:center;border:1px solid var(--line);border-radius:10px;padding:10px 6px;background:var(--bg)}
+.day .i{font-size:30px}.day small{display:block;color:var(--muted)}
+footer{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html">← Back to portfolio</a>
+  <h1>Weather App</h1>
+
+  <section class="box">
+    <form id="form" autocomplete="off">
+      <div class="search" id="searchWrap">
+        <input id="q" type="text" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list" aria-label="City name" placeholder="Search a city, e.g. Chiang Mai" maxlength="60" autocomplete="off" enterkeyhint="search" required>
+        <ul id="sugg" role="listbox" aria-label="City suggestions" hidden></ul>
+      </div>
+      <button class="p" type="submit">Search</button>
+      <button id="geo" type="button">Use my location</button>
+      <button id="unit" type="button" aria-pressed="false" aria-label="Show temperature in Fahrenheit">°F</button>
+    </form>
+  </section>
+
+  <p id="status" role="status"></p>
+  <div id="out" hidden>
+    <section class="box" id="now"></section>
+    <section class="box"><h2>7-day forecast</h2><div class="days" id="days"></div></section>
+  </div>
+  <footer>Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (CC BY 4.0).</footer>
+</div>
+
+<script>
+const GEO = "https://geocoding-api.open-meteo.com/v1/search";
+const FORECAST = "https://api.open-meteo.com/v1/forecast";
+const KEY = "weather-app.v1";
+const WMO = { 0: ["Clear sky", "☀️", "🌙"], 1: ["Mainly clear", "🌤️", "🌙"], 2: ["Partly cloudy", "⛅"], 3: ["Overcast", "☁️"],
+  45: ["Fog", "🌫️"], 48: ["Rime fog", "🌫️"], 51: ["Light drizzle", "🌦️"], 53: ["Drizzle", "🌦️"], 55: ["Heavy drizzle", "🌧️"],
+  56: ["Freezing drizzle", "🌧️"], 57: ["Freezing drizzle", "🌧️"], 61: ["Light rain", "🌦️"], 63: ["Rain", "🌧️"], 65: ["Heavy rain", "🌧️"],
+  66: ["Freezing rain", "🌧️"], 67: ["Freezing rain", "🌧️"], 71: ["Light snow", "🌨️"], 73: ["Snow", "🌨️"], 75: ["Heavy snow", "❄️"],
+  77: ["Snow grains", "🌨️"], 80: ["Light showers", "🌦️"], 81: ["Showers", "🌧️"], 82: ["Violent showers", "⛈️"],
+  85: ["Snow showers", "🌨️"], 86: ["Heavy snow showers", "❄️"], 95: ["Thunderstorm", "⛈️"], 96: ["Thunderstorm with hail", "⛈️"], 99: ["Thunderstorm with hail", "⛈️"] };
+
+const $ = id => document.getElementById(id);
+const el = (t, p = {}, k = []) => { const n = Object.assign(document.createElement(t), p); [].concat(k).forEach(x => n.append(x)); return n; };
+const info = (code, isDay = 1) => { const w = WMO[code] || ["Unknown", "🌡️"]; return { text: w[0], icon: !isDay && w[2] ? w[2] : w[1] }; };
+
+let place = { name: "Bangkok, Thailand", lat: 13.7563, lon: 100.5018 };
+let unit = "C", data = null, req = 0;
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) { if (s.place && Number.isFinite(s.place.lat) && Number.isFinite(s.place.lon)) place = s.place; if (s.unit === "F") unit = "F"; } } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ place, unit })); } catch (e) {} };
+
+const temp = c => Math.round(unit === "F" ? c * 9 / 5 + 32 : c) + "°";
+const wind = k => unit === "F" ? Math.round(k * 0.621) + " mph" : Math.round(k) + " km/h";
+function status(text, isErr) { $("status").textContent = text; $("status").className = isErr ? "err" : ""; }
+async function getJSON(url, signal) {          // 10 s timeout; optional outside abort signal
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 10000);
+  if (signal) signal.addEventListener("abort", () => c.abort());
+  try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error("HTTP " + r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+
+function render() {
+  if (!data) return;
+  const c = data.current, d = data.daily, i = info(c.weather_code, c.is_day);
+  $("now").replaceChildren(
+    el("div", { className: "now" }, [
+      el("div", { className: "big", textContent: i.icon, ariaHidden: "true" }),
+      el("div", {}, [el("div", { className: "temp", textContent: temp(c.temperature_2m) }), el("p", { textContent: i.text + " · " + place.name })])
+    ]),
+    el("div", { className: "facts" }, [["Feels like", temp(c.apparent_temperature)], ["Humidity", Math.round(c.relative_humidity_2m) + "%"], ["Wind", wind(c.wind_speed_10m)]]
+      .map(([k, v]) => el("div", {}, [el("span", { textContent: k }), el("strong", { textContent: v })]))));
+  $("days").replaceChildren(...d.time.map((t, n) => {
+    const [y, m, dd] = t.split("-").map(Number), di = info(d.weather_code[n]);
+    const name = n === 0 ? "Today" : new Date(y, m - 1, dd).toLocaleDateString("en-US", { weekday: "short" });
+    const rain = d.precipitation_probability_max && d.precipitation_probability_max[n] != null ? d.precipitation_probability_max[n] + "% rain" : "";
+    return el("div", { className: "day", title: di.text }, [el("strong", { textContent: name }), el("div", { className: "i", textContent: di.icon }),
+      el("div", { textContent: temp(d.temperature_2m_max[n]) + " / " + temp(d.temperature_2m_min[n]) }), el("small", { textContent: rain })]);
+  }));
+  $("out").hidden = false;
+}
+
+async function loadWeather() {
+  const my = ++req;
+  status("Loading weather…");
+  try {
+    const url = FORECAST + "?latitude=" + place.lat + "&longitude=" + place.lon +
+      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day" +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7";
+    const json = await getJSON(url);
+    if (my !== req) return;                 // a newer request replaced this one
+    if (!json.current || !json.daily) throw new Error("Unexpected response");
+    data = json; render(); status("");
+  } catch (e) {
+    if (my !== req) return;
+    status("Could not load the weather. Check your connection and try again.", true);
+  }
+}
+
+/* ---------- City search with live suggestions ---------- */
+let items = [], active = -1, qid = 0, timer = null, ctrl = null;
+const q = $("q"), sugg = $("sugg");
+
+function toPlace(r) {
+  return { name: [r.name, r.admin1, r.country].filter((x, i, a) => x && a.indexOf(x) === i).join(", "), lat: r.latitude, lon: r.longitude };
+}
+async function fetchPlaces(text, signal) {
+  const json = await getJSON(GEO + "?name=" + encodeURIComponent(text) + "&count=8&language=en&format=json", signal);
+  const seen = new Set(), out = [];
+  for (const r of json.results || []) {
+    if (!Number.isFinite(r.latitude) || !Number.isFinite(r.longitude)) continue;
+    const p = toPlace(r);
+    if (seen.has(p.name) && r.admin2) p.name += " (" + r.admin2 + ")";   // same label, different place
+    if (seen.has(p.name)) continue;                                       // true duplicate
+    seen.add(p.name); out.push(p);
+  }
+  return out;
+}
+
+function closeSugg() { sugg.hidden = true; q.setAttribute("aria-expanded", "false"); q.removeAttribute("aria-activedescendant"); active = -1; }
+function setActive(n) {
+  active = n;
+  [...sugg.children].forEach((li, i) => { li.setAttribute("aria-selected", i === n); li.classList.toggle("on", i === n); if (i === n && li.scrollIntoView) li.scrollIntoView({ block: "nearest" }); });
+  if (n >= 0) q.setAttribute("aria-activedescendant", "opt-" + n); else q.removeAttribute("aria-activedescendant");
+}
+function openSugg() { sugg.hidden = false; q.setAttribute("aria-expanded", "true"); }
+function showHint(text) { items = []; active = -1; sugg.replaceChildren(el("li", { className: "hint", textContent: text })); q.removeAttribute("aria-activedescendant"); openSugg(); }
+function showSugg(list, text) {
+  if (!list.length) return showHint("No matching cities");
+  items = list; active = -1;
+  sugg.replaceChildren(...list.map((p, i) => {
+    const li = el("li", { id: "opt-" + i }), low = p.name.toLowerCase(), t = text.toLowerCase();
+    li.setAttribute("role", "option"); li.setAttribute("aria-selected", "false");
+    if (t && low.startsWith(t)) li.append(el("strong", { textContent: p.name.slice(0, t.length) }), p.name.slice(t.length)); else li.append(p.name);
+    li.onmousedown = e => e.preventDefault();          // keep focus in the input
+    li.onclick = () => choose(p);
+    return li;
+  }));
+  openSugg();
+}
+
+function choose(p) {
+  place = p; save(); items = []; ++qid; clearTimeout(timer); if (ctrl) ctrl.abort();
+  closeSugg(); q.value = p.name; loadWeather();
+}
+
+async function suggest(text) {
+  const my = ++qid; ctrl = new AbortController();
+  try { const list = await fetchPlaces(text, ctrl.signal); if (my === qid) showSugg(list, text); }
+  catch (e) { if (my === qid) showHint("Could not load suggestions. Check your connection."); }
+}
+
+q.addEventListener("input", () => {
+  clearTimeout(timer); ++qid; if (ctrl) ctrl.abort();      // invalidate any request still in flight
+  const text = q.value.trim();
+  if (text.length < 2) { items = []; closeSugg(); return; }
+  timer = setTimeout(() => suggest(text), 250);            // debounce
+});
+q.addEventListener("keydown", e => {
+  if (e.key === "ArrowDown" && items.length) { e.preventDefault(); if (sugg.hidden) { showSugg(items, q.value.trim()); } setActive((active + 1) % items.length); }
+  else if (e.key === "ArrowUp" && items.length) { e.preventDefault(); if (sugg.hidden) showSugg(items, q.value.trim()); setActive(active <= 0 ? items.length - 1 : active - 1); }
+  else if (e.key === "Escape" && !sugg.hidden) { e.preventDefault(); closeSugg(); }
+  else if (e.key === "Enter" && !sugg.hidden && active >= 0) { e.preventDefault(); choose(items[active]); }
+});
+q.addEventListener("focus", () => { if (items.length && sugg.hidden && q.value.trim().length >= 2) showSugg(items, q.value.trim()); });
+document.addEventListener("click", e => { if (!$("searchWrap").contains(e.target)) closeSugg(); });
+
+$("form").onsubmit = async e => {                            // Enter with nothing highlighted, or the Search button
+  e.preventDefault();
+  const text = q.value.trim();
+  if (text.length < 2) return status("Type at least 2 letters of a city name.", true);
+  clearTimeout(timer); if (ctrl) ctrl.abort(); const my = ++qid;
+  status("Searching…");
+  try {
+    const list = await fetchPlaces(text);
+    if (my !== qid) return;
+    if (!list.length) { closeSugg(); return status("No place found for “" + text + "”. Try another spelling.", true); }
+    choose(list[0]);
+  } catch (err) { if (my === qid) status("Search failed. Check your connection and try again.", true); }
+};
+
+$("geo").onclick = () => {
+  if (!navigator.geolocation) return status("Your browser does not support location.", true);
+  status("Getting your location…");
+  navigator.geolocation.getCurrentPosition(
+    p => { choose({ name: "Your location", lat: p.coords.latitude, lon: p.coords.longitude }); $("q").value = ""; },
+    () => status("Location permission was denied. Search for a city instead.", true));
+};
+$("unit").onclick = () => {
+  unit = unit === "C" ? "F" : "C"; save();
+  $("unit").textContent = unit === "C" ? "°F" : "°C";
+  $("unit").setAttribute("aria-pressed", unit === "F");
+  $("unit").setAttribute("aria-label", unit === "C" ? "Show temperature in Fahrenheit" : "Show temperature in Celsius");
+  render();
+};
+
+if (unit === "F") { $("unit").textContent = "°C"; $("unit").setAttribute("aria-pressed", "true"); }
+loadWeather();
+</script>
+</body>
+</html>
