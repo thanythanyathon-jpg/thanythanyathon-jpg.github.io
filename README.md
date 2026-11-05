@@ -19,8 +19,7 @@ Hi there! 👋 I am a **2nd-year Computer Science / IT student** actively lookin
 
 I have a strong foundation in core IT fundamentals, object-oriented programming, and system administration. I love debugging, learning new frameworks, and working on hands-on technical projects.
 
-- 🎓 **Education:** B.S. in Computer Science / IT at Mahidol University (Expected Graduation: 2029)
-- 🎯 **Looking For:** Summer / Term Internship in [Target Area]
+- 🎓 **Education:** Information and Communications Technology at Mahidol University (Expected Graduation: 2029)
 - 🌱 **Currently Studying:** Software Engineering, Web Application
 - ⚡ **Strengths:** Quick Learner, Great Adaptability
 
