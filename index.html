@@ -110,6 +110,9 @@ footer{text-align:center;padding-top:8px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.status .dot{animation:none}.card,.btn{transition:none}}
 @media (max-width:820px){aside{padding:22px}h2{font-size:24px}}
 @media print{aside{border:0;box-shadow:none;padding:0}.reveal{opacity:1!important;transform:none!important}.status,.stats{display:none}.card::before{display:none}body{background:#fff}}
+.stack{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.stack-label{width:100%;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.tag.sm{font-size:12px;padding:2px 10px;background:transparent;border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -157,15 +160,18 @@ const DATA = {
   ],
   summary: "Student who enjoys building small, practical web tools. Currently looking for internships and projects where I can learn and contribute.",
   projects: [
-    { icon: "💰", name: "Expense Tracker", desc: "Log income and spending, see monthly totals and a category breakdown. Works instantly in your browser.", tags: ["Web app"], links: [{ label: "Open app", href: "expense.html" }] },
-    { icon: "📅", name: "Meeting Room Booking", desc: "Pick a room, date and time on a daily availability grid. Double bookings are blocked automatically.", tags: ["Web app"], links: [{ label: "Open app", href: "booking.html" }] },
-    { icon: "⛅", name: "Weather App", desc: "Search any city with live suggestions for current conditions and a 7-day forecast, powered by the free Open-Meteo API.", tags: ["Web app", "API"], links: [{ label: "Open app", href: "weather.html" }] }
+    { icon: "💰", name: "Expense Tracker", stack: ["HTML", "CSS", "JavaScript", "Supabase", "PostgreSQL", "Auth"], desc: "Log income and spending, see monthly totals and a category breakdown. Works instantly in your browser.", tags: ["Web app"], links: [{ label: "Open app", href: "expense.html" }] },
+    { icon: "📅", name: "Meeting Room Booking", stack: ["HTML", "CSS", "JavaScript", "Supabase", "PostgreSQL", "Auth", "Realtime"], desc: "Pick a room, date and time on a daily availability grid. Double bookings are blocked automatically.", tags: ["Web app"], links: [{ label: "Open app", href: "booking.html" }] },
+    { icon: "⛅", name: "Weather App", stack: ["HTML", "CSS", "JavaScript", "Open-Meteo API"], desc: "Search any city with live suggestions for current conditions and a 7-day forecast, powered by the free Open-Meteo API.", tags: ["Web app", "API"], links: [{ label: "Open app", href: "weather.html" }] }
   ],
   skills: {
-    "Programming Languages": ["Python", "Java", "JavaScript"],
-    "Web": ["HTML", "CSS"],
-    "Tools": ["Git", "GitHub", "VS Code"],
-    "Spoken languages": ["Thai (native)", "English"]
+    "Programming Languages": ["JavaScript", "Python", "Java"],
+    "Web Development": ["HTML", "CSS"],
+    "Frameworks & Libraries": ["React", "TypeScript", "Vite", "Tailwind CSS", "Recharts"],
+    "Database": ["SQL", "MySQL", "PostgreSQL", "ER Modelling", "Supabase"],
+    "Development Tools": ["Git", "GitHub", "Visual Studio Code", "Figma"],
+    "Soft Skills": ["Problem-Solving", "Analytical Thinking", "Teamwork and Collaboration", "Adaptability"],
+    "Spoken Languages": ["Thai (native)", "English (intermediate)"]
   },
   education: [
     { school: "Mahidol University", degree: "Bachelor's degree in Information & Computer Technology Major (in progress)", period: "2025 – 2029" }
@@ -213,6 +219,7 @@ function renderProjects() {
       el("div", { className: "pico", textContent: p.icon || "🚀", ariaHidden: "true" }),
       el("h3", { textContent: p.name }),
       el("p", { textContent: p.desc }),
+      ...(p.stack ? [el("div", { className: "stack" }, [el("span", { className: "stack-label", textContent: "Built with" }), ...p.stack.map(t => el("span", { className: "tag sm", textContent: t }))])] : []),
       el("div", { className: "tags" }, p.tags.map(t => el("span", { className: "tag", textContent: t }))),
       el("div", { className: "links" }, p.links.map(l => el("a", { href: l.href, textContent: l.label, target: /^https?:/.test(l.href) ? "_blank" : "", rel: "noopener" })))
     ])));
@@ -223,7 +230,10 @@ renderProjects();
 if (allTags.length < 3) $("filters").style.display = "none";   // hide the filter only when there is nothing to filter
 
 Object.entries(DATA.skills).forEach(([group, items]) =>
-  $("skillList").append(el("div", {}, [el("b", { textContent: group }), ...items.map(s => el("span", { className: "tag", textContent: s }))])));
+  $("skillList").append(el("div", {}, [el("b", { textContent: group }), ...items.map(sk => {
+    const used = DATA.projects.filter(p => (p.stack || []).some(x => x.toLowerCase() === sk.toLowerCase())).map(p => p.name);
+    return el("span", { className: "tag", textContent: sk, title: used.length ? "Used in: " + used.join(", ") : "" });
+  })])));
 
 DATA.education.forEach(e => $("eduList").append(el("p", { className: "edu" }, [
   el("strong", { textContent: e.school }), el("br"), e.degree + " · " + e.period
@@ -234,7 +244,7 @@ if (DATA.cv) { $("cvBtn").href = DATA.cv; $("cvBtn").hidden = false; }
 
 /* Status badge + stats */
 if (DATA.status) { $("statusText").textContent = DATA.status; $("status").hidden = false; }
-const skillCount = Object.entries(DATA.skills).filter(([g]) => !/^spoken/i.test(g)).reduce((n, [, v]) => n + v.length, 0);
+const skillCount = Object.entries(DATA.skills).filter(([g]) => !/^(spoken|soft)/i.test(g)).reduce((n, [, v]) => n + v.length, 0);
 [[DATA.projects.length, "Projects"], [skillCount, "Skills"]].forEach(([n, l]) =>
   $("stats").append(el("div", { className: "stat" }, [el("b", { textContent: n }), el("span", { textContent: l })])));
 
