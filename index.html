@@ -122,6 +122,7 @@ footer{text-align:center;padding-top:8px}
     <ul class="contact" id="contact"></ul>
     <nav>
       <a class="btn primary" href="#projects">View projects</a>
+      <a class="btn" id="cvBtn" href="#" target="_blank" rel="noopener" hidden>View CV (PDF)</a>
     </nav>
   </aside>
 
@@ -148,6 +149,7 @@ const DATA = {
   photo: "",            // e.g. "images/me.jpg", or leave empty to show your initial
   updated: "October 2026",
   status: "Open to internships",
+  cv: "CV.pdf",         // file name of your CV in the same folder (names are case-sensitive on GitHub)
   contact: [
     { label: "thanythanyathon@gmail.com", href: "mailto:thanythanyathon@gmail.com" },
     { label: "My GitHub", href: "https://github.com/thanythanyathon-jpg" },
@@ -226,6 +228,9 @@ Object.entries(DATA.skills).forEach(([group, items]) =>
 DATA.education.forEach(e => $("eduList").append(el("p", { className: "edu" }, [
   el("strong", { textContent: e.school }), el("br"), e.degree + " · " + e.period
 ])));
+
+/* CV link */
+if (DATA.cv) { $("cvBtn").href = DATA.cv; $("cvBtn").hidden = false; }
 
 /* Status badge + stats */
 if (DATA.status) { $("statusText").textContent = DATA.status; $("status").hidden = false; }
