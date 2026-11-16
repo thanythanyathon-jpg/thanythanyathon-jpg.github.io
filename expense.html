@@ -73,6 +73,7 @@ li.t .del{padding:2px 8px;font-size:13px}
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script>
+if (typeof App === "undefined") document.getElementById("gate").textContent = "Could not load common.js. Make sure common.js is uploaded next to this page, then reload.";
 const CATS = { expense: ["Food", "Transport", "Study", "Shopping", "Bills", "Other"], income: ["Allowance", "Salary", "Other"] };
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, "0");

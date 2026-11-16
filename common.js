@@ -87,22 +87,60 @@
     return { from, channel: () => ({ on() { return this; }, subscribe() { return this; } }), removeChannel() {}, auth: {} };
   }
 
+  const LIB_FALLBACK = "https://unpkg.com/@supabase/supabase-js@2.118.0/dist/umd/supabase.js";
+  function loadLib(done) {                 // second chance if the first CDN was blocked or slow
+    let finished = false;
+    const finish = () => { if (!finished) { finished = true; done(); } };
+    const tag = el("script", { src: LIB_FALLBACK, onload: finish, onerror: finish });
+    document.head.append(tag);
+    setTimeout(finish, 6000);
+  }
+
   /* opts: { onUser(user), onSignedOut() } */
   App.start = function (opts) {
+    const hasKeys = !!(cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("YOUR-") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("YOUR-"));
+    if (hasKeys && !window.supabase) loadLib(() => begin(opts, hasKeys)); else begin(opts, hasKeys);
+  };
+
+  function startDemo(opts, message) {      // data lives in this browser only
     const gate = document.getElementById("gate"), app = document.getElementById("app");
-    const configured = window.supabase && cfg.SUPABASE_URL && !cfg.SUPABASE_URL.includes("YOUR-") && cfg.SUPABASE_ANON_KEY && !cfg.SUPABASE_ANON_KEY.includes("YOUR-");
-    if (!configured) {                      // works out of the box, no backend needed
-      App.local = true;
-      App.sb = localClient();
-      App.user = { id: "local", is_anonymous: true };
-      gate.replaceChildren(el("div", { className: "userbar" }, [el("span", { textContent: "Demo mode: your data is saved only in this browser. Connect Supabase in config.js to sync accounts and share data (see README)." })]));
-      app.hidden = false;
-      opts.onUser(App.user);
+    App.local = true;
+    App.sb = localClient();
+    App.user = { id: "local", is_anonymous: true };
+    gate.replaceChildren(el("div", { className: "userbar" }, [el("span", { textContent: message })]));
+    app.hidden = false;
+    opts.onUser(App.user);
+  }
+
+  function trouble(opts) {                 // shown when the server does not answer, instead of a blank page
+    return el("section", { className: "box" }, [
+      el("h2", { textContent: "Can't reach the server" }),
+      el("p", { textContent: "The connection to Supabase is taking too long. If this is a free Supabase project that has been inactive, it may be paused: open the Supabase dashboard and press Restore. Your network or browser may also be blocking supabase.co." }),
+      el("div", { style: "display:flex;gap:10px;flex-wrap:wrap" }, [
+        el("button", { className: "p", type: "button", textContent: "Try again", onclick: () => location.reload() }),
+        el("button", { type: "button", textContent: "Use demo mode (saved in this browser)", onclick: () => startDemo(opts, "Demo mode: the server could not be reached, so your data is saved only in this browser.") })
+      ])]);
+  }
+
+  function begin(opts, hasKeys) {
+    const gate = document.getElementById("gate"), app = document.getElementById("app");
+    if (!hasKeys) {                         // works out of the box, no backend needed
+      startDemo(opts, "Demo mode: your data is saved only in this browser. Supabase is not connected because config.js still has placeholder values (see README).");
+      return;
+    }
+    if (!window.supabase) {                 // keys are set but the library could not be loaded: say so, do not hide it
+      gate.replaceChildren(el("section", { className: "box" }, [
+        el("h2", { textContent: "Could not connect" }),
+        el("p", { textContent: "The Supabase library failed to load (network, ad blocker or firewall). Reload the page, or try another network or browser." })]));
       return;
     }
     App.sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
-    let lastId = "init";
+    gate.replaceChildren(el("div", { className: "userbar" }, [el("span", { textContent: "Connecting…" })]));
+    let lastId = "init", settled = false;
+    const slow = setTimeout(() => { if (!settled && !App.local) gate.replaceChildren(trouble(opts)); }, Number(cfg.CONNECT_TIMEOUT_MS) || 7000);
     App.sb.auth.onAuthStateChange((_event, session) => {
+      if (App.local) return;                // user chose demo mode while the server was unreachable
+      settled = true; clearTimeout(slow);
       const user = session ? session.user : null;
       const id = user ? user.id : "none";
       if (id === lastId) return;            // ignore token refreshes

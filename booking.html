@@ -74,6 +74,7 @@ li div{flex:1;min-width:0;overflow-wrap:anywhere}li small{color:var(--muted);dis
 <script src="config.js"></script>
 <script src="common.js"></script>
 <script>
+if (typeof App === "undefined") document.getElementById("gate").textContent = "Could not load common.js. Make sure common.js is uploaded next to this page, then reload.";
 const ROOMS = [{ id: "A", name: "Room A", cap: 6 }, { id: "B", name: "Room B", cap: 12 }, { id: "C", name: "Room C", cap: 20 }];
 const OPEN = 8 * 60, CLOSE = 18 * 60;
 const $ = id => document.getElementById(id);
