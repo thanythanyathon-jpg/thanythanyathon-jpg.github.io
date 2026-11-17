@@ -154,7 +154,10 @@ $("csv").onclick = async () => {
 $("date").value = todayStr();
 $("month").value = todayStr().slice(0, 7);
 fillCats();
-App.start({ onUser: load, onSignedOut: () => { items = []; render(); } });
+App.start({
+  auth: { icon: "wallet", title: "Expense", accent: "Tracker", scene: "chart", heading: "Track your spending with ease",
+    benefits: [{ icon: "plus", text: "Log income and expenses in seconds" }, { icon: "chart", text: "See monthly totals by category" }, { icon: "lock", text: "Your data stays private to your account" }] },
+  onUser: load, onSignedOut: () => { items = []; render(); } });
 </script>
 </body>
 </html>

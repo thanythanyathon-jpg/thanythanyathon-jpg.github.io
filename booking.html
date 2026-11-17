@@ -165,6 +165,8 @@ $("date").value = todayStr();
 $("date").min = todayStr();
 fillEnd();
 App.start({
+  auth: { icon: "calendar", title: "Meeting Room", accent: "Booking", scene: "meeting", image: "images/meeting-room.webp", heading: "Book meeting rooms with ease",
+    benefits: [{ icon: "grid", text: "Check room availability at a glance" }, { icon: "click", text: "Book in a few clicks" }, { icon: "shield", text: "Double bookings are blocked automatically" }] },
   onUser: () => {
     load();
     if (!channel) channel = App.sb.channel("bookings-live")
